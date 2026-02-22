@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{% if filter_username %}Chat history: {{ filter_username }}{% else %}Chat History{% endif %} – UIWiz Admin{% endblock %}
+
+{% block content %}
+<h1>{% if filter_username %}Chat history for <strong>{{ filter_username }}</strong>{% else %}Chat History{% endif %}</h1>
+<p class="page-desc">
+  {% if filter_username %}
+  Prompts this user has typed in the UIWiz chat.
+  <a href="{% url 'chat_history' %}">View all users</a>
+  {% else %}
+  All prompts that users have typed in the UIWiz chat. Select a user below or filter by username.
+  {% endif %}
+</p>
+
+<div class="chat-history-actions">
+  <form method="get" class="filter-form" style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <label for="username">User:</label>
+    <input type="text" id="username" name="username" value="{{ filter_username }}" placeholder="Username" class="filter-input">
+    <button type="submit" class="btn">Go</button>
+  </form>
+  {% if filter_username %}
+  <a href="{% url 'chat_history' %}" class="btn btn-secondary">View all users</a>
+  {% endif %}
+  {% if users_with_chat %}
+  <span class="user-switcher">
+    <span class="muted">View as:</span>
+    {% for u in users_with_chat %}
+    <a href="{% url 'chat_history_user' u %}" class="user-link {% if u == filter_username %}active{% endif %}">{{ u }}</a>{% if not forloop.last %} · {% endif %}
+    {% endfor %}
+  </span>
+  {% endif %}
+</div>
+
+<table>
+  <thead>
+    <tr>
+      {% if not filter_username %}<th>User</th>{% endif %}
+      <th>Session</th>
+      <th>Prompt (what they typed)</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for msg in user_messages %}
+    <tr>
+      {% if not filter_username %}<td><strong>{{ msg.session.user.username }}</strong></td>{% endif %}
+      <td class="muted">{{ msg.session.title|truncatewords:8 }} <span style="opacity:0.7;">#{{ msg.session_id }}</span></td>
+      <td class="prompt-cell">{{ msg.content|truncatewords:50 }}</td>
+      <td class="muted">{{ msg.timestamp|naturaltime }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="{% if filter_username %}3{% else %}4{% endif %}" class="muted">
+        {% if filter_username %}No prompts for this user yet.{% else %}No user prompts in the database yet.{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block extra_css %}
+.prompt-cell { max-width: 420px; word-break: break-word; white-space: pre-wrap; font-size: 0.9rem; }
+.chat-history-actions { margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.filter-form label { color: var(--muted); font-size: 0.9rem; }
+.filter-input { padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); min-width: 140px; }
+.btn-secondary { background: rgba(255,255,255,0.15); color: #fff; margin-left: 0.25rem; }
+.btn-secondary:hover { background: rgba(255,255,255,0.22); }
+.user-switcher { color: var(--muted); font-size: 0.9rem; }
+.user-switcher .user-link { color: rgba(255,255,255,0.85); text-decoration: none; }
+.user-switcher .user-link:hover { color: #fff; text-decoration: underline; }
+.user-switcher .user-link.active { color: #fff; font-weight: 600; }
+{% endblock %}

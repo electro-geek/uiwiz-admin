@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard – UIWiz Admin{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="page-desc">Users and Gemini API keys from the same database as uiwiz-backend (<code>auth_user</code>,
+  <code>api_userprofile</code>).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Last login</th>
+      <th>Date joined</th>
+      <th>Gemini API key</th>
+      <th>Chat history</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr class="user-row" data-href="{% url 'chat_history_user' row.user.username %}" role="button" tabindex="0">
+      <td><strong>{{ row.user.username }}</strong></td>
+      <td>{{ row.user.email|default:"—" }}</td>
+      <td class="muted">
+        {% if row.user.last_login %}
+        {{ row.user.last_login|naturaltime }}
+        {% else %}
+        Never
+        {% endif %}
+      </td>
+      <td class="muted">{{ row.user.date_joined|date:"M j, Y H:i" }}</td>
+      <td class="key-cell">
+        {% if row.profile and row.profile.gemini_api_key %}
+        {{ row.profile.gemini_api_key }}
+        {% else %}
+        <span class="muted">—</span>
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'chat_history_user' row.user.username %}" class="row-link">View chat history</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" class="muted">No users in the database yet.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="page-desc muted" style="margin-top: 0.75rem;">Click any row to view that user's chat history.</p>
+{% endblock %}
+
+{% block extra_css %}
+.user-row { cursor: pointer; }
+.user-row:hover td { background: rgba(255,255,255,0.05); }
+.user-row .row-link { text-decoration: none; }
+.user-row .row-link:hover { text-decoration: underline; }
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.user-row').forEach(function(row) {
+  row.addEventListener('click', function(e) {
+    if (!e.target.closest('a')) {
+      window.location.href = row.dataset.href;
+    }
+  });
+  row.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.location.href = row.dataset.href;
+    }
+  });
+});
+</script>
+{% endblock %}

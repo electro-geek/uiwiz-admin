@@ -1,0 +1,18 @@
+# Copy to config.properties and set values (or use environment variables).
+# Use the SAME database as uiwiz-backend so the admin panel sees the same users and API keys.
+
+# Django
+django.secret_key=your-secret-key-here
+django.debug=True
+django.allowed_hosts=localhost,127.0.0.1
+
+# Database (must match uiwiz-backend)
+db.engine=django.db.backends.postgresql
+db.name=uiwiz
+db.user=your-db-user
+db.password=your-db-password
+db.host=your-db-host
+db.port=5432
+db.sslmode=require
+
+# Env overrides: DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, etc.
